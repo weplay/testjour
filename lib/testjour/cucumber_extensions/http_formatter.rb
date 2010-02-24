@@ -43,10 +43,8 @@ module Testjour
   private
 
     def progress(time, status, step_match = nil, exception = nil)
-      queue = RedisQueue.new(@configuration.queue_host,
-                             @configuration.queue_prefix,
-                             @configuration.queue_timeout)
-      queue.push(:results, Result.new(time, status, step_match, exception))
+      queue = ResultsQueue.new(@configuration.queue_host, @configuration.queue_prefix,  @configuration.queue_timeout)
+      queue.push(Result.new(time, status, step_match, exception))
     end
 
     def table_header_cell?(status)

@@ -3,7 +3,9 @@ require "socket"
 require "etc"
 
 require "testjour/commands/command"
-require "testjour/redis_queue"
+require "testjour/redis/results_queue"
+require "testjour/redis/work_queue"
+require "testjour/redis/failed_features_set"
 require "testjour/configuration"
 require "testjour/cucumber_extensions/step_counter"
 require "testjour/cucumber_extensions/feature_file_finder"
@@ -21,17 +23,15 @@ module Commands
       configuration.setup
 
       if configuration.feature_files.any?
-        redis_queue = RedisQueue.new(configuration.queue_host,
-                       configuration.queue_prefix,
-                       configuration.queue_timeout)
-        redis_queue.reset_all
+        reset_redis
+        remove_rerun
         queue_features
-        
+
         at_exit do
           Testjour.logger.info caller.join("\n")
-          redis_queue.reset_all
+          reset_redis
         end
-        
+
 
         @started_slaves = 0
         start_slaves
@@ -45,14 +45,18 @@ module Commands
       end
     end
 
+    def reset_redis
+      [results_queue, work_queue, failed_features].each { |r| r.reset }
+    end
+
+    def remove_rerun
+      File.unlink("rerun.txt") if File.exists?("rerun.txt")
+    end
+
     def queue_features
       Testjour.logger.info("Queuing features...")
-      queue = RedisQueue.new(configuration.queue_host,
-                             configuration.queue_prefix,
-                             configuration.queue_timeout)
-
       configuration.feature_files.each do |feature_file|
-        queue.push(:feature_files, feature_file)
+        work_queue.push(feature_file)
         Testjour.logger.info "Queued: #{feature_file}"
       end
     end
@@ -104,16 +108,18 @@ module Commands
 
     def print_results
       results_formatter = ResultsFormatter.new(step_counter, configuration.options)
-      queue = RedisQueue.new(configuration.queue_host,
-                             configuration.queue_prefix,
-                             configuration.queue_timeout)
-
       step_counter.count.times do
-        results_formatter.result(queue.blocking_pop(:results))
+        results_formatter.result(results_queue.pop)
       end
-
       results_formatter.finish
+      print_failures if configuration.rerun?
       return results_formatter.failed? ? 1 : 0
+    end
+
+    def print_failures
+      rerun = File.open("rerun.txt", "w")
+      rerun.write(failed_features.all.join(" "))
+      rerun.close
     end
 
     def step_counter
@@ -143,6 +149,20 @@ module Commands
 
     def testjour_path
       File.expand_path(File.dirname(__FILE__) + "/../../../bin/testjour")
+    end
+
+  private
+
+    def work_queue
+      @work_queue ||= WorkQueue.new(configuration.queue_host, configuration.queue_prefix)
+    end
+  
+    def results_queue
+      @results_queue ||= ResultsQueue.new(configuration.queue_host, configuration.queue_prefix, configuration.queue_timeout)
+    end
+    
+    def failed_features
+      @failed_features ||= FailedFeaturesSet.new(configuration.queue_host, configuration.queue_prefix)
     end
 
   end

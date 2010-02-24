@@ -3,6 +3,8 @@ require "cucumber"
 require "uri"
 require "daemons/daemonize"
 require "testjour/cucumber_extensions/http_formatter"
+require "testjour/cucumber_extensions/failed_features_formatter"
+require "testjour/redis/work_queue"
 require "testjour/mysql"
 require "stringio"
 
@@ -49,13 +51,11 @@ module Commands
     end
 
     def work
-      queue = RedisQueue.new(configuration.queue_host,
-                             configuration.queue_prefix,
-                             configuration.queue_timeout)
+      work_queue = WorkQueue.new(configuration.queue_host, configuration.queue_prefix)
       feature_file = true
 
       while feature_file
-        if (feature_file = queue.pop(:feature_files))
+        if (feature_file = work_queue.pop)
           Testjour.logger.info "Loading: #{feature_file}"
           features = load_plain_text_features(feature_file)
           parent_pid = $PID
@@ -76,8 +76,9 @@ module Commands
     end
 
     def execute_features(features)
-      http_formatter = Testjour::HttpFormatter.new(configuration)
-      tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, [http_formatter])
+      formatters = [Testjour::HttpFormatter.new(configuration)]
+      formatters << Testjour::FailedFeaturesFormatter.new(configuration) if configuration.rerun?
+      tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, formatters)
       tree_walker.options = configuration.cucumber_configuration.options
       Testjour.logger.info "Visiting..."
       tree_walker.visit_features(features)

@@ -45,11 +45,11 @@ Given /^a file testjour_preload.rb at the root of the project that logs "Hello, 
 end
 
 When /^I run `testjour (.+)`$/ do |args|
-  @args ||= []
+  @args = []
   @args += args.split
   
   Dir.chdir(@full_dir) do
-    testjour_path = File.expand_path(File.dirname(__FILE__) + "/../../../../bin/testjour")
+    testjour_path = File.expand_path(File.dirname(__FILE__) + "/../../bin/testjour")
     cmd = "#{testjour_path} #{@args.join(" ")}"
     # puts cmd
     status, @stdout, @stderr = systemu(cmd)
@@ -97,6 +97,12 @@ Then /^([a-z\.]+) should include "(.+)"$/ do |filename, text|
   end
 end
 
+Then /^([a-z\.]+) should not include "(.+)"$/ do |filename, text|
+  Dir.chdir(@full_dir) do
+    IO.read(filename).should_not include(text)
+  end
+end
+
 Then /^it should run on (\d+) slaves?$/ do |count|
   Dir.chdir(@full_dir) do
     log = IO.read("testjour.log")
@@ -112,4 +118,10 @@ end
 Then /^it should run on 2 remote slaves$/ do
   pids = @stdout.scan(/\[\d+\] ran \d+ steps/).uniq
   pids.size.should == 2
+end
+
+Then /^([a-z\.]+) should not exist$/ do |filename|
+  Dir.chdir(@full_dir) do
+    File.exist?(filename).should be_false
+  end
 end

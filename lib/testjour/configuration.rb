@@ -49,7 +49,8 @@ module Testjour
     end
 
     def queue_prefix
-      @options[:queue_prefix] || 'default'
+      queue_name = @options[:queue_prefix] || 'default'
+      "#{queue_name}#{master_pid}"
     end
     
     def queue_timeout
@@ -192,11 +193,24 @@ module Testjour
       if @options[:queue_prefix]
         args_from_options << "--queue-prefix=#{@options[:queue_prefix]}"
       end
+      if @options[:rerun]
+        args_from_options << "--rerun"
+      end
+      args_from_options << "--master-pid=#{master_pid}"
+      
       return args_from_options
+    end
+    
+    def master_pid
+      @options[:master_pid] || Process.pid
     end
 
     def args_for_cucumber
       @unknown_args + @args
+    end
+
+    def rerun?
+      @options[:rerun]
     end
 
   protected
@@ -250,6 +264,14 @@ module Testjour
 
         opts.on("--max-local-slaves=MAX", "Maximum number of local slaves") do |max|
           @options[:max_local_slaves] = max.to_i
+        end
+        
+        opts.on("--master-pid=MASTER_PID", "Master process pid") do |master_pid|
+          @options[:master_pid] = master_pid
+        end
+        
+        opts.on("--rerun", "Write a rerun file on failures in cucumber's rerun format") do
+          @options[:rerun] = true
         end
       end
     end

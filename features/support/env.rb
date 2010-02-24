@@ -14,6 +14,7 @@ def testjour_cleanup
   Dir.chdir(@full_dir) do
     File.unlink("testjour.log") if File.exists?("testjour.log")
     File.unlink("testjour_preload.rb") if File.exists?("testjour_preload.rb")
+    File.unlink("rerun.txt") if File.exists?("rerun.txt")
   end
 end
 

@@ -30,17 +30,17 @@ Feature: Run Features
     And the output should contain "F1) FAIL"
 
   Scenario: Run undefined steps
-    When I run `testjour -r support/env undefined.feature`
+    When I run `testjour --require support/env undefined.feature`
     Then it should pass with "1 steps undefined"
     And the output should contain "U1) undefined.feature:4:in `Given undefined'"
 
   Scenario: Strict mode
-    When I run `testjour --strict -r support/env undefined.feature`
+    When I run `testjour --strict --require support/env undefined.feature`
     Then it should fail with "1 steps undefined"
     And the output should contain "U1) undefined.feature:4:in `Given undefined'"
 
   Scenario: Run pending steps
-    When I run `testjour -r support/env -r step_definitions undefined.feature`
+    When I run `testjour --require support/env --require step_definitions undefined.feature`
     Then it should pass with "1 steps pending"
 
   Scenario: Parallel runs
@@ -49,8 +49,32 @@ Feature: Run Features
     And the output should contain "FAIL"
     And the output should contain "1 steps failed"
     And it should run on 2 slaves
-    
+
   Scenario: Preload application
     Given a file testjour_preload.rb at the root of the project that logs "Hello, world"
     When I run `testjour passing.feature`
     And testjour.log should include "Hello, world"
+
+  Scenario: Rerun formatter generates rerun.txt with failed features
+     When I run `testjour --rerun failing.feature`
+     Then rerun.txt should include "failing.feature"
+
+  Scenario: No rerun.txt is generated with rerun formatter if all features are successful
+    When I run `testjour --rerun passing.feature`
+    Then rerun.txt should not include "passing.feature"
+
+  Scenario: Rerun formatter generates rerun.txt with multiple failed features
+     When I run `testjour --rerun failing.feature failing2.feature passing.feature`
+     Then rerun.txt should include "failing.feature failing2.feature"
+     Then rerun.txt should not include "passing.feature"
+
+  Scenario: Rerun formatter rerun.txt is empty after running failed features then passing features
+    When I run `testjour --rerun failing.feature`
+    And I run `testjour --rerun passing.feature`
+    Then rerun.txt should not include "failing.feature"
+    And rerun.txt should not include "passing.feature"
+
+  Scenario: Without rerun formatter rerun.txt is not generated
+    When I run `testjour failing.feature passing.feature`
+    Then rerun.txt should not exist
+    
