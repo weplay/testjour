@@ -1,5 +1,13 @@
 === 0.3.4
 
+* Enhancements
+
+  * Print failed scenarios with host and pid at end of run;
+
+* Fixes
+
+  * Fix for rare but bad concurrency issue with old rerun formatting (when last scenario failed)
+
 === 0.3.3
 
 * Enhancements
