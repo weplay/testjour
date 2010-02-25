@@ -1,6 +1,10 @@
-=== 1.0.0 / 2008-09-23
+=== 0.3.4
 
-* 1 major enhancement
+=== 0.3.3
 
-  * Birthday!
+* Enhancements
+  
+  * Support "rerun" option similar to cucumber's native support. Passing
+      --rerun will cause testjour to write out a rerun.txt file containing
+      failed feature files which can be picked up by another run
 
