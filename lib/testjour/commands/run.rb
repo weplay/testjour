@@ -5,11 +5,10 @@ require "etc"
 require "testjour/commands/command"
 require "testjour/redis/results_queue"
 require "testjour/redis/work_queue"
-require "testjour/redis/failed_features_set"
 require "testjour/configuration"
 require "testjour/cucumber_extensions/step_counter"
 require "testjour/cucumber_extensions/feature_file_finder"
-require "testjour/results_formatter"
+require "testjour/results_formatters"
 require "testjour/result"
 
 module Testjour
@@ -46,7 +45,7 @@ module Commands
     end
 
     def reset_redis
-      [results_queue, work_queue, failed_features].each { |r| r.reset }
+      [results_queue, work_queue].each { |r| r.reset }
     end
 
     def remove_rerun
@@ -107,19 +106,18 @@ module Commands
     end
 
     def print_results
-      results_formatter = ResultsFormatter.new(step_counter, configuration.options)
+      formatters = [ProgressAndStatsFormatter.new(step_counter, configuration.options)]
+      formatters << RerunFormatter.new(step_counter, configuration.options) if configuration.rerun?
       step_counter.count.times do
-        results_formatter.result(results_queue.pop)
+        result = results_queue.pop
+        formatters.each do |formatter|
+          formatter.result(result)
+        end
       end
-      results_formatter.finish
-      print_failures if configuration.rerun?
-      return results_formatter.failed? ? 1 : 0
-    end
-
-    def print_failures
-      rerun = File.open("rerun.txt", "w")
-      rerun.write(failed_features.all.join(" "))
-      rerun.close
+      formatters.each do |formatter|
+        formatter.finish
+      end
+      return formatters.first.failed? ? 1 : 0
     end
 
     def step_counter
@@ -159,10 +157,6 @@ module Commands
   
     def results_queue
       @results_queue ||= ResultsQueue.new(configuration.queue_host, configuration.queue_prefix, configuration.queue_timeout)
-    end
-    
-    def failed_features
-      @failed_features ||= FailedFeaturesSet.new(configuration.queue_host, configuration.queue_prefix)
     end
 
   end

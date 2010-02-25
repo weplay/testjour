@@ -23,8 +23,12 @@ module Testjour
       @step_start = Time.now
     end
 
+    def scenario_name(keyword, name, file_colon_line, source_indent)
+      @scenario_file_colon_line = file_colon_line
+    end
+
     def after_step_result(keyword, step_match, multiline_arg, status, exception, source_indent, background)
-      progress(Time.now - @step_start, status, step_match, exception)
+      progress(Time.now - @step_start, status, @scenario_file_colon_line, step_match, exception)
     end
 
     def before_outline_table(outline_table)
@@ -42,9 +46,9 @@ module Testjour
 
   private
 
-    def progress(time, status, step_match = nil, exception = nil)
+    def progress(time, status, scenario_file_colon_line = nil, step_match = nil, exception = nil)
       queue = ResultsQueue.new(@configuration.queue_host, @configuration.queue_prefix,  @configuration.queue_timeout)
-      queue.push(Result.new(time, status, step_match, exception))
+      queue.push(Result.new(time, scenario_file_colon_line, status, step_match, exception))
     end
 
     def table_header_cell?(status)

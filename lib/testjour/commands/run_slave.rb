@@ -3,7 +3,6 @@ require "cucumber"
 require "uri"
 require "daemons/daemonize"
 require "testjour/cucumber_extensions/http_formatter"
-require "testjour/cucumber_extensions/failed_features_formatter"
 require "testjour/redis/work_queue"
 require "testjour/mysql"
 require "stringio"
@@ -76,9 +75,7 @@ module Commands
     end
 
     def execute_features(features)
-      formatters = [Testjour::HttpFormatter.new(configuration)]
-      formatters << Testjour::FailedFeaturesFormatter.new(configuration) if configuration.rerun?
-      tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, formatters)
+      tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, [Testjour::HttpFormatter.new(configuration)])
       tree_walker.options = configuration.cucumber_configuration.options
       Testjour.logger.info "Visiting..."
       tree_walker.visit_features(features)

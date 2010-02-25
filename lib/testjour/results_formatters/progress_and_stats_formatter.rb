@@ -3,12 +3,13 @@ require "testjour/colorer"
 require "testjour/result_set"
 
 module Testjour
-  class ResultsFormatter
+  class ProgressAndStatsFormatter
 
     def initialize(step_counter, options = {})
       @options = options
       @progress_bar = ProgressBar.new("0 failures", step_counter.count, options[:simple_progress])
       @result_set   = ResultSet.new(step_counter)
+      @failed_scenarios = []
     end
 
     def missing_backtrace_lines
@@ -19,6 +20,9 @@ module Testjour
       @result_set.record(result)
       log_result(result)
       update_progress_bar
+      if result.failed?
+        @failed_scenarios << "#{result.scenario} (#{result.server_id}])"
+      end
     end
 
     def update_progress_bar
@@ -73,15 +77,25 @@ module Testjour
       end
     end
 
+    def print_failed_scenarios
+      return if @failed_scenarios.empty?
+      puts Testjour::Colorer.failed("Failed Scenarios:")
+      @failed_scenarios.each do |scenario|
+        puts Testjour::Colorer.failed(scenario)
+      end
+    end
+
     def print_summary_line(step_type)
       count = @result_set.count(step_type)
       return if count.zero?
       puts Colorer.send(step_type, "#{count} steps #{step_type}")
     end
-
+    
     def finish
       @progress_bar.finish
       puts
+      puts
+      print_failed_scenarios
       puts
       print_summary
       puts

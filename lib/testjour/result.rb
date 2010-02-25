@@ -9,6 +9,7 @@ module Testjour
     attr_reader :message
     attr_reader :backtrace
     attr_reader :backtrace_line
+    attr_reader :scenario
 
     CHARS = {
       :undefined => 'U',
@@ -18,10 +19,11 @@ module Testjour
       :skipped   => 'S'
     }
 
-    def initialize(time, status, step_match = nil, exception = nil)
+    def initialize(time, scenario_file_colon_line, status, step_match = nil, exception = nil)
       @time   = time
       @status = status
-
+      @scenario_file_colon_line = scenario_file_colon_line
+      
       if step_match
         @backtrace_line = step_match.backtrace_line
       end
@@ -37,6 +39,10 @@ module Testjour
 
     def server_id
       "#{@hostname} [#{@pid}]"
+    end
+
+    def scenario
+      @scenario_file_colon_line
     end
 
     def char

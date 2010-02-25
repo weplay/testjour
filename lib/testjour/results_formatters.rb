@@ -1,0 +1,2 @@
+require "testjour/results_formatters/progress_and_stats_formatter"
+require "testjour/results_formatters/rerun_formatter"
