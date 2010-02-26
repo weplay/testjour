@@ -8,12 +8,8 @@ module Testjour
     def initialize(step_counter, options = {})
       @options = options
       @progress_bar = ProgressBar.new("0 failures", step_counter.count, options[:simple_progress])
-      @result_set   = ResultSet.new(step_counter)
+      @result_set   = ResultSet.new
       @failed_scenarios = []
-    end
-
-    def missing_backtrace_lines
-      @result_set.missing_backtrace_lines
     end
 
     def result(result)
