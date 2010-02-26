@@ -91,6 +91,10 @@ Then /^the output should contain "(.+)"$/ do |text|
   @stdout.should include(text)
 end
 
+Then /^the output should not contain "([^\"]*)"$/ do |text|
+  @stdout.should_not include(text)
+end
+
 Then /^([a-z\.]+) should include "(.+)"$/ do |filename, text|
   Dir.chdir(@full_dir) do
     IO.read(filename).should include(text)
@@ -124,4 +128,9 @@ Then /^([a-z\.]+) should not exist$/ do |filename|
   Dir.chdir(@full_dir) do
     File.exist?(filename).should be_false
   end
+end
+
+Then /^the output should note the failure with host and pid for "([^\"]*)"$/ do |scenario_line_file|
+  hostname = Socket.gethostname
+  @stdout.should match(/#{scenario_line_file} \(#{hostname} \[\d+\]\)/)
 end

@@ -21,7 +21,7 @@ module Testjour
       log_result(result)
       update_progress_bar
       if result.failed?
-        @failed_scenarios << "#{result.scenario} (#{result.server_id}])"
+        @failed_scenarios << "#{result.scenario} (#{result.server_id})"
       end
     end
 

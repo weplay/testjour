@@ -29,6 +29,16 @@ Feature: Run Features
     Then it should fail with "1 steps failed"
     And the output should contain "F1) FAIL"
 
+  Scenario: Report all failing scenarios at the end
+    When I run `testjour failing.feature failing2.feature`
+    Then the output should contain "Failed Scenarios:"
+    And the output should note the failure with host and pid for "failing.feature:3"
+    And the output should note the failure with host and pid for "failing2.feature:3"
+
+  Scenario: Do not report failing scenarios if no failures
+    When I run `testjour passing.feature`
+    Then the output should not contain "Failed Scenarios:"
+
   Scenario: Run undefined steps
     When I run `testjour --require support/env undefined.feature`
     Then it should pass with "1 steps undefined"
@@ -54,27 +64,4 @@ Feature: Run Features
     Given a file testjour_preload.rb at the root of the project that logs "Hello, world"
     When I run `testjour passing.feature`
     And testjour.log should include "Hello, world"
-
-  Scenario: Rerun formatter generates rerun.txt with failed features
-     When I run `testjour --rerun failing.feature`
-     Then rerun.txt should include "failing.feature"
-
-  Scenario: No rerun.txt is generated with rerun formatter if all features are successful
-    When I run `testjour --rerun passing.feature`
-    Then rerun.txt should not include "passing.feature"
-
-  Scenario: Rerun formatter generates rerun.txt with multiple failed features
-     When I run `testjour --rerun failing.feature failing2.feature passing.feature`
-     Then rerun.txt should include "failing.feature failing2.feature"
-     Then rerun.txt should not include "passing.feature"
-
-  Scenario: Rerun formatter rerun.txt is empty after running failed features then passing features
-    When I run `testjour --rerun failing.feature`
-    And I run `testjour --rerun passing.feature`
-    Then rerun.txt should not include "failing.feature"
-    And rerun.txt should not include "passing.feature"
-
-  Scenario: Without rerun formatter rerun.txt is not generated
-    When I run `testjour failing.feature passing.feature`
-    Then rerun.txt should not exist
     
