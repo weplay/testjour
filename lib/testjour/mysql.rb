@@ -9,16 +9,16 @@ module Testjour
     end
     
     def create_database
-      run "/usr/local/mysql/bin/mysqladmin create #{runner_database_name}"
+      run "/usr/local/mysql/bin/mysqladmin -u root create #{runner_database_name}"
     end
     
     def drop_database
-      run "/usr/local/mysql/bin/mysqladmin -f drop #{runner_database_name}"
+      run "/usr/local/mysql/bin/mysqladmin -u root -f drop #{runner_database_name}"
     end
 
     def load_schema
       schema_file = File.expand_path("./db/development_structure.sql")
-      run "/usr/local/mysql/bin/mysql #{runner_database_name} < #{schema_file}"
+      run "/usr/local/mysql/bin/mysql -u root #{runner_database_name} < #{schema_file}"
     end
     
     def runner_database_name
