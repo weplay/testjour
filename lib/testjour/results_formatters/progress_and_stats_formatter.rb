@@ -63,8 +63,15 @@ module Testjour
       print_summary_line(:passed)
       puts Colorer.failed("#{@result_set.errors.size} steps failed") unless @result_set.errors.empty?
       print_summary_line(:skipped)
+      print_skipped_lines
       print_summary_line(:pending)
       print_summary_line(:undefined)
+    end
+
+    def print_skipped_lines
+      @result_set.collect { |result| result.status == :skipped }.each do |result|
+        puts result.scenario
+      end
     end
 
     def print_stats
