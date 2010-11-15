@@ -97,7 +97,16 @@ module Commands
     end
 
     def remote_slave_run_command(user, host, path, max_remote_slaves)
-      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} testjour run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')} #{testjour_uri}".squeeze(" ")
+      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} #{testjour_executable} run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')} #{testjour_uri}".squeeze(" ")
+    end
+
+    def testjour_executable
+      bundler_executable = File.join("bin", "testjour")
+      testjour_executable = if File.exist?(bundler_executable)
+        "cd #{path} && bin/testjour"
+      else
+        "testjour"
+      end
     end
 
     def start_slave
