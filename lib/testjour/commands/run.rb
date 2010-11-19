@@ -90,13 +90,25 @@ module Commands
         remote_slave.gsub(/\?workers=(\d+)/, '')
       end
       uri = URI.parse(remote_slave)
-      cmd = remote_slave_run_command(uri.user, uri.host, uri.path, num_workers)
-      Testjour.logger.info "Starting remote slave: #{cmd}"
+
+      if using_bundler?
+        slave_bundle_install_cmd = slave_bundle_install_command(user, host, uri.path)
+        Testjour.logger.info "Will install bundler on slave with: #{slave_bundle_install_cmd}"
+      end
+
+      start_slave_cmd = remote_slave_run_command(uri.user, uri.host, uri.path, num_workers)
+      Testjour.logger.info "Then will start remote slave with: #{start_slave_cmd}"
+
       pid = fork do
-        Testjour.logger.info(exec(cmd))
+        Testjour.logger.info(system(slave_bundle_install_cmd)) if using_bundler?
+        Testjour.logger.info(exec(start_slave_cmd))
       end
       Process.detach(pid)
       num_workers
+    end
+
+    def slave_bundle_install_command(user, host, path)
+      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} 'cd #{path} && bundle install'".squeeze(" ")
     end
 
     def remote_slave_run_command(user, host, path, max_remote_slaves)
@@ -104,12 +116,25 @@ module Commands
     end
 
     def testjour_executable(path)
-      bundler_executable = File.join("bin", "testjour")
-      testjour_executable = if File.exist?(bundler_executable)
-        "cd #{path} && bundle install && bin/testjour"
+      if using_bundler? && has_testjour_binstub?
+        "cd #{path} && #{testjour_binstub}"
+      elsif using_bundler?
+        "cd #{path} && bundle exec testjour"
       else
         "testjour"
       end
+    end
+
+    def using_bundler?
+      File.exist?("Gemfile.lock")
+    end
+
+    def has_testjour_binstub?
+      File.exist?(testjour_binstub)
+    end
+
+    def testjour_binstub
+      File.join("bin", "testjour")
     end
 
     def start_slave
@@ -166,7 +191,7 @@ module Commands
     def work_queue
       @work_queue ||= WorkQueue.new(configuration.queue_host, configuration.queue_prefix)
     end
-  
+
     def results_queue
       @results_queue ||= ResultsQueue.new(configuration.queue_host, configuration.queue_prefix, configuration.queue_timeout)
     end
