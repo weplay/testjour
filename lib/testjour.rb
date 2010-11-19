@@ -24,7 +24,7 @@ def detached_exec(command = nil)
         if block_given?
           yield
         else
-          exec(cmd)
+          exec(command)
         end
       end
     end
