@@ -92,7 +92,10 @@ module Commands
       uri = URI.parse(remote_slave)
       cmd = remote_slave_run_command(uri.user, uri.host, uri.path, num_workers)
       Testjour.logger.info "Starting remote slave: #{cmd}"
-      detached_exec(cmd)
+      pid = fork do
+        Testjour.logger.info(exec(command))
+      end
+      Process.detach(pid)
       num_workers
     end
 
