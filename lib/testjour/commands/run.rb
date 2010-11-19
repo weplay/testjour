@@ -101,7 +101,7 @@ module Commands
 
       pid = fork do
         Testjour.logger.info(system(slave_bundle_install_cmd)) if using_bundler?
-        Testjour.logger.info(system(start_slave_cmd))
+        Testjour.logger.info(exec(start_slave_cmd))
       end
       Process.detach(pid)
       num_workers
