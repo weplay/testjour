@@ -90,6 +90,9 @@ module Commands
         remote_slave.gsub(/\?workers=(\d+)/, '')
       end
       uri = URI.parse(remote_slave)
+      rsync_destination = "#{uri.host}:#{uri.path}"
+      Testjour.logger.info "Rsync to #{rsync_destination} from master"
+      Rsync.copy_from_current_directory_to(rsync_destination)
       cmd = remote_slave_run_command(uri.user, uri.host, uri.path, num_workers)
       Testjour.logger.info "Starting remote slave: #{cmd}"
       detached_exec(cmd)
@@ -97,7 +100,7 @@ module Commands
     end
 
     def remote_slave_run_command(user, host, path, max_remote_slaves)
-      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} '#{testjour_executable(path)} run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')} #{testjour_uri}'".squeeze(" ")
+      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} '#{testjour_executable(path)} run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')}'".squeeze(" ")
     end
 
     def testjour_executable(path)

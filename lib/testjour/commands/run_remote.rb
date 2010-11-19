@@ -23,7 +23,7 @@ module Testjour
         Dir.chdir(dir) do
           Testjour.setup_logger(dir)
           Testjour.logger.info "Starting #{self.class.name}"
-          rsync
+          rsync if configuration.rsync_uri
           start_additional_slaves
         end
       end
