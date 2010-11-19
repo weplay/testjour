@@ -89,13 +89,18 @@ module Commands
         num_workers = $1.to_i
         remote_slave.gsub(/\?workers=(\d+)/, '')
       end
+
       uri = URI.parse(remote_slave)
-      rsync_destination = "#{uri.host}:#{uri.path}"
-      Testjour.logger.info "Rsync to #{rsync_destination} from master"
-      Rsync.copy_from_current_directory_to(rsync_destination)
       cmd = remote_slave_run_command(uri.user, uri.host, uri.path, num_workers)
-      Testjour.logger.info "Starting remote slave: #{cmd}"
-      detached_exec(cmd)
+
+      detached_exec do
+        rsync_destination = "#{uri.host}:#{uri.path}"
+        Testjour.logger.info "Rsync to #{rsync_destination} from master"
+        Rsync.copy_from_current_directory_to(rsync_destination)
+        Testjour.logger.info "Starting remote slave: #{cmd}"
+        exec(cmd)
+      end
+
       num_workers
     end
 
@@ -104,12 +109,15 @@ module Commands
     end
 
     def testjour_executable(path)
-      bundler_executable = File.join("bin", "testjour")
-      testjour_executable = if File.exist?(bundler_executable)
-        "cd #{path} && bundle install && bin/testjour"
+      if using_bundler?
+        "cd #{path} && bundle install && bundle exec testjour"
       else
         "testjour"
       end
+    end
+
+    def using_bundler?
+      File.exist?("Gemfile")
     end
 
     def start_slave

@@ -13,11 +13,19 @@ ensure
   stream.reopen(old_stream)
 end
 
-def detached_exec(command)
+def detached_exec(command = nil)
+  if command && block_given?
+    raise ArgumentError.new("detached_exec does not support both an argument and a block")
+  end
+
   pid = fork do
     silence_stream(STDOUT) do
       silence_stream(STDERR) do
-        exec(command)
+        if block_given?
+          yield
+        else
+          exec(cmd)
+        end
       end
     end
   end
@@ -38,11 +46,11 @@ module Testjour
     setup_logger
     @logger
   end
-  
+
   def self.override_logger_pid(pid)
     @overridden_logger_pid = pid
   end
-  
+
   def self.effective_pid
     @overridden_logger_pid || $PID
   end
