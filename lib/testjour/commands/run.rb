@@ -100,7 +100,7 @@ module Commands
     end
 
     def remote_slave_run_command(user, host, path, max_remote_slaves)
-      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} '#{testjour_executable(path)} run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')}'".squeeze(" ")
+      "ssh -o StrictHostKeyChecking=no #{user}#{'@' if user}#{host} '#{testjour_executable(path)} run:remote --in=#{path} --max-remote-slaves=#{max_remote_slaves} #{configuration.run_slave_args.join(' ')} #{testjour_uri}'".squeeze(" ")
     end
 
     def testjour_executable(path)

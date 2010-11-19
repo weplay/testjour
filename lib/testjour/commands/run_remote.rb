@@ -23,7 +23,6 @@ module Testjour
         Dir.chdir(dir) do
           Testjour.setup_logger(dir)
           Testjour.logger.info "Starting #{self.class.name}"
-          rsync if configuration.rsync_uri
           start_additional_slaves
         end
       end
@@ -47,11 +46,6 @@ module Testjour
         user = Etc.getpwuid.name
         host = Testjour.socket_hostname
         "rsync://#{user}@#{host}" + File.expand_path(".")
-      end
-      
-      
-      def rsync
-        Rsync.copy_to_current_directory_from(configuration.rsync_uri)
       end
     end
   
