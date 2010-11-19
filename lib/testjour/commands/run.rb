@@ -92,7 +92,7 @@ module Commands
       uri = URI.parse(remote_slave)
 
       if using_bundler?
-        slave_bundle_install_cmd = slave_bundle_install_command(user, host, uri.path)
+        slave_bundle_install_cmd = slave_bundle_install_command(uri.user, uri.host, uri.path)
         Testjour.logger.info "Will install bundler on slave with: #{slave_bundle_install_cmd}"
       end
 
