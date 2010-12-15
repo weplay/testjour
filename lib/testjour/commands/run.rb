@@ -96,7 +96,7 @@ module Commands
       detached_exec do
         rsync_destination = "#{uri.host}:#{uri.path}"
         Testjour.logger.info "Rsync to #{rsync_destination} from master"
-        Rsync.copy_from_current_directory_to(rsync_destination)
+        Rsync.copy_from_current_directory_to(rsync_destination, :excludes => configuration.rsync_excludes)
         Testjour.logger.info "Starting remote slave: #{cmd}"
         exec(cmd)
       end

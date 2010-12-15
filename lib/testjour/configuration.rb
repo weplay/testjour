@@ -60,6 +60,10 @@ module Testjour
       @options[:slaves] || []
     end
 
+    def rsync_excludes
+      @options[:rsync_excludes] || []
+    end
+
     def setup_mysql
       return unless mysql_mode?
 
@@ -254,6 +258,11 @@ module Testjour
 
         opts.on("--rsync-uri=RSYNC_URI", "Use another location to host the codebase for slave rsync (master will rsync to this URI first)") do |rsync_uri|
           @options[:rsync_uri] = rsync_uri
+        end
+        
+        opts.on("--rsync-exclude=EXCLUDE", "Additional ignore arguments during master to slave rsycing") do |rsync_exclude|
+          @options[:rsync_excludes] ||= []
+          @options[:rsync_excludes] << rsync_exclude
         end
 
         opts.on("--max-local-slaves=MAX", "Maximum number of local slaves") do |max|

@@ -13,13 +13,14 @@ module Testjour
       new(source_uri, File.expand_path(".")).copy_with_retry
     end
     
-    def self.copy_from_current_directory_to(destination_uri)
-      new(File.expand_path("."), destination_uri).copy_with_retry
+    def self.copy_from_current_directory_to(destination_uri, opts = {})
+      new(File.expand_path("."), destination_uri, opts).copy_with_retry
     end
     
-    def initialize(source_uri, destination_uri)
+    def initialize(source_uri, destination_uri, opts = {})
       @source_uri = source_uri
       @destination_uri = destination_uri
+      @options = opts
     end
 
     def copy_with_retry
@@ -54,7 +55,17 @@ module Testjour
     end
     
     def command
-      "rsync -az -e \"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" --delete --exclude=.git --exclude=*.log --exclude=*.pid #{@source_uri}/ #{@destination_uri}"
+      exclude_args = excludes.map { |exclude| "--exclude=#{exclude}" }.join(" ")
+      "rsync -az -e \"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no\" --delete #{exclude_args} #{@source_uri}/ #{@destination_uri}"
+    end
+    
+    def excludes
+      excludes = [".git", "*.log", "*.pid"]
+      if @options[:excludes]
+        excludes += @options[:excludes]
+        excludes.uniq!
+      end
+      excludes
     end
   end
 end
