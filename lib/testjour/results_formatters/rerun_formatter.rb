@@ -7,19 +7,19 @@ module Testjour
       @options = options
       @failed_scenarios = []
     end
-    
+
     def result(result)
       if result.failed?
         @failed_scenarios << result.scenario
       end
     end
-    
+
     def finish
       print_rerun_file
     end
-    
+
   protected
-  
+
     def print_rerun_file
       failed_features = @failed_scenarios.inject({}) do |hash, val|
         hash[val.split(":").first] = true
@@ -28,8 +28,12 @@ module Testjour
       File.open("rerun.txt", "w") do |f|
         f.write(failed_features.join(" "))
       end
+    rescue Exception => ex
+      Testjour.logger.error("ERROR PRINTING RERUN FILE: #{ex.message}")
+      Testjour.logger.error(@failed_scenarios.inspect)
+      raise ex
     end
-    
+
   end
-  
+
 end
