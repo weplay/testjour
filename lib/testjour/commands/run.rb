@@ -128,12 +128,17 @@ module Commands
     def print_results
       formatters = [ProgressAndStatsFormatter.new(step_counter, configuration.options)]
       formatters << RerunFormatter.new(step_counter, configuration.options) if configuration.rerun?
+      results_counter = 0
       step_counter.count.times do
         result = results_queue.pop
+        results_counter += 1
+        Testjour.logger.debug("Popped result #{results_counter} of #{step_counter.count}: #{result}")
         formatters.each do |formatter|
           formatter.result(result)
         end
       end
+
+      Testjour.logger.info "Results queue empty. Finishing formatters"
       formatters.each do |formatter|
         formatter.finish
       end
