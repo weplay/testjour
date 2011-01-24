@@ -14,9 +14,9 @@ module Testjour
 
         if result.scenario.nil?
           Testjour.logger.debug("FAILED RESULT WITH nil SCENARIO")
-          Testjour.logger.debug("result.status: #{result.status}")
-          Testjour.logger.debug("result.server_id: #{result.server_id}")
-          Testjour.logger.debug("result.message: #{result.message}")
+          [:status, :message, :backtrace_line, :backtrace].each do |result_attr|
+            Testjour.logger.debug("result.#{result_attr}: #{result.send(result_attr)}")
+          end
         end
       end
     end
