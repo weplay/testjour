@@ -13,4 +13,5 @@ Gem::Specification.new do |s|
   s.add_dependency('cucumber', '0.6.1')
   s.add_dependency('redis')
   s.add_dependency('daemons')
+  s.add_dependency('system_timer')
 end

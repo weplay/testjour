@@ -1,11 +1,11 @@
-require 'timeout'
+require 'system_timer'
 require 'socket'
 
 TCPSocket.class_eval do
-  
+
   def self.wait_for_no_service(options)
     socket = nil
-    Timeout::timeout(options[:timeout] || 20) do
+    SystemTimer.timeout_after(options[:timeout] || 20) do
       loop do
         begin
           socket = TCPSocket.new(options[:host], options[:port])
@@ -16,10 +16,10 @@ TCPSocket.class_eval do
       end
     end
   end
-  
+
   def self.wait_for_service(options)
     socket = nil
-    Timeout::timeout(options[:timeout] || 20) do
+    SystemTimer.timeout_after(options[:timeout] || 20) do
       loop do
         begin
           socket = TCPSocket.new(options[:host], options[:port])
@@ -32,5 +32,5 @@ TCPSocket.class_eval do
   ensure
     socket.close unless socket.nil?
   end
-  
+
 end

@@ -4,14 +4,14 @@ require "testjour/redis/redis_queue"
 module Testjour
 
   class ResultsQueue < RedisQueue
-    
+
     def initialize(redis_host, queue_namespace, queue_timeout)
       super(redis_host, queue_namespace)
       @queue_timeout = queue_timeout
     end
-    
+
     def pop
-      Timeout.timeout(@queue_timeout) do
+      SystemTimer.timeout_after(@queue_timeout) do
         result = nil
 
         while result.nil?
@@ -22,13 +22,13 @@ module Testjour
         result
       end
     end
-    
+
   protected
-  
+
     def queue_name
       "results"
     end
-    
+
   end
-  
+
 end

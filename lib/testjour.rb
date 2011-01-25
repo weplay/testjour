@@ -21,10 +21,15 @@ def detached_exec(command = nil)
   pid = fork do
     silence_stream(STDOUT) do
       silence_stream(STDERR) do
-        if block_given?
-          yield
-        else
-          exec(command)
+        begin
+          if block_given?
+            yield
+          else
+            exec(command)
+          end
+        rescue Exception => ex
+          Testjour.logger.error("ERROR in detached_exec: #{ex.message}")
+          raise ex
         end
       end
     end
