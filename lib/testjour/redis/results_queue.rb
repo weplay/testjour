@@ -11,16 +11,7 @@ module Testjour
     end
 
     def pop
-      SystemTimer.timeout_after(@queue_timeout) do
-        result = nil
-
-        while result.nil?
-          result = super
-          sleep 0.1 unless result
-        end
-
-        result
-      end
+      blocking_pop(@queue_timeout)
     end
 
   protected
