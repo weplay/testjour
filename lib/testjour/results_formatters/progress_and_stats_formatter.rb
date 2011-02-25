@@ -31,13 +31,13 @@ module Testjour
       case result.char
       when "F"
         erase_current_line
-        print Testjour::Colorer.failed("F#{@result_set.errors.size}) ")
+        print Testjour::Colorer.failed("F#{@result_set.errors_count}) ")
         puts Testjour::Colorer.failed(result.message)
         puts result.backtrace
         puts
       when "U"
         erase_current_line
-        print Testjour::Colorer.undefined("U#{@result_set.undefineds.size}) ")
+        print Testjour::Colorer.undefined("U#{@result_set.undefineds_count}) ")
         puts Testjour::Colorer.undefined(result.backtrace_line)
         puts
       end
@@ -52,7 +52,7 @@ module Testjour
     end
 
     def title
-      "#{@result_set.slaves} slaves, #{@result_set.errors.size} failures"
+      "#{@result_set.slaves} slaves, #{@result_set.errors_count} failures"
     end
 
     def erase_current_line
@@ -61,7 +61,7 @@ module Testjour
 
     def print_summary
       print_summary_line(:passed)
-      puts Colorer.failed("#{@result_set.errors.size} steps failed") unless @result_set.errors.empty?
+      puts Colorer.failed("#{@result_set.errors_count} steps failed") unless @result_set.has_errors?
       print_summary_line(:skipped)
       print_summary_line(:pending)
       print_summary_line(:undefined)
@@ -86,7 +86,7 @@ module Testjour
       return if count.zero?
       puts Colorer.send(step_type, "#{count} steps #{step_type}")
     end
-    
+
     def finish
       @progress_bar.finish
       puts
@@ -101,9 +101,9 @@ module Testjour
 
     def failed?
       if @options[:strict]
-        @result_set.errors.any? || @result_set.undefineds.any?
+        @result_set.has_errors? || @result_set.has_undefineds?
       else
-        @result_set.errors.any?
+        @result_set.has_errors?
       end
     end
 

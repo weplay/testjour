@@ -1,12 +1,20 @@
 module Testjour
   class ResultSet
 
+    attr_reader :errors_count
+    attr_reader :undefineds_count
+
     def initialize
       @counts   = Hash.new { |h, result|    h[result]    = 0 }
       @results  = Hash.new { |h, server_id| h[server_id] = [] }
+      @undefineds_count = 0
+      @errors_count = 0
     end
 
     def record(result)
+      @errors_count += 1 if result.failed?
+      @undefineds_count += 1 if result.undefined?
+
       @results[result.server_id] << result
       @counts[result.status] += 1
     end
@@ -24,12 +32,12 @@ module Testjour
       end
     end
 
-    def errors
-      @results.values.flatten.select { |r| r.failed? }
+    def has_errors?
+      @errors_count > 0
     end
-    
-    def undefineds
-      @results.values.flatten.select { |r| r.undefined? }
+
+    def has_undefineds?
+      @undefineds_count > 0
     end
 
     def slaves
