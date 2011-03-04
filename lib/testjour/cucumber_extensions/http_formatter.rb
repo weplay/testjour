@@ -6,7 +6,7 @@ require 'testjour/result'
 module Testjour
 
   class HttpFormatter
-    
+
     def initialize(configuration)
       @configuration = configuration
     end
@@ -21,6 +21,10 @@ module Testjour
 
     def before_step(step)
       @step_start = Time.now
+    end
+
+    def before_background(background)
+      @scenario_file_colon_line = background.backtrace_line
     end
 
     def scenario_name(keyword, name, file_colon_line, source_indent)

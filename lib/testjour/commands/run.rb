@@ -132,7 +132,6 @@ module Commands
       step_counter.count.times do
         result = results_queue.pop
         results_counter += 1
-        Testjour.logger.debug("Popped result #{results_counter} of #{step_counter.count}: #{result}")
         formatters.each do |formatter|
           formatter.result(result)
         end
@@ -179,7 +178,7 @@ module Commands
     def work_queue
       @work_queue ||= WorkQueue.new(configuration.queue_host, configuration.queue_prefix)
     end
-  
+
     def results_queue
       @results_queue ||= ResultsQueue.new(configuration.queue_host, configuration.queue_prefix, configuration.queue_timeout)
     end
