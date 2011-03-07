@@ -51,6 +51,7 @@ module Testjour
   private
 
     def progress(time, status, scenario_file_colon_line = nil, step_match = nil, exception = nil)
+      Testjour.logger.info "Recording step result to queue##{@configuration.queue_prefix}"
       queue = ResultsQueue.new(@configuration.queue_host, @configuration.queue_prefix,  @configuration.queue_timeout)
       queue.push(Result.new(time, scenario_file_colon_line, status, step_match, exception))
     end

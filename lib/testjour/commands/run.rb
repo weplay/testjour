@@ -129,6 +129,7 @@ module Commands
       formatters = [ProgressAndStatsFormatter.new(step_counter, configuration.options)]
       formatters << RerunFormatter.new(step_counter, configuration.options) if configuration.rerun?
       results_counter = 0
+      Testjour.logger.info "Waiting for #{step_counter.count} results"
       step_counter.count.times do
         result = results_queue.pop
         results_counter += 1
