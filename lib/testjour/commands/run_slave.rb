@@ -23,16 +23,16 @@ module Commands
       Dir.chdir(dir) do
         Testjour.setup_logger(dir)
         Testjour.logger.info "Starting #{self.class.name}"
-        
+
         before_require
-        
+
         begin
           configuration.setup
           configuration.setup_mysql
-          
+
           require_cucumber_files
           preload_app
-          
+
           work
         rescue Object => ex
           Testjour.logger.error "#{self.class.name} error: #{ex.message}"
@@ -40,11 +40,11 @@ module Commands
         end
       end
     end
-    
+
     def dir
       configuration.path
     end
-    
+
     def before_require
       enable_gc_optimizations
     end
@@ -56,7 +56,7 @@ module Commands
       while feature_file
         if (feature_file = work_queue.pop)
           Testjour.logger.info "Loading: #{feature_file}"
-          features = load_plain_text_features(feature_file)
+          features = configuration.plain_text_features_collection[feature_file]
           parent_pid = $PID
           if @child = fork
             Testjour.logger.info "Forked #{@child} to run #{feature_file}"
@@ -86,14 +86,14 @@ module Commands
       step_mother.after_configuration(configuration.cucumber_configuration)
       step_mother.load_code_files(configuration.cucumber_configuration.step_defs_to_load)
     end
-    
+
     def preload_app
       if File.exist?('./testjour_preload.rb')
         Testjour.logger.info 'Requiring ./testjour_preload.rb'
         require './testjour_preload.rb'
       end
     end
-    
+
     # Not every platform supports fork. Here we do our magic to
     # determine if yours does.
     def fork
@@ -106,7 +106,7 @@ module Commands
         nil
       end
     end
-    
+
     # Enables GC Optimizations if you're running REE.
     # http://www.rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
     def enable_gc_optimizations

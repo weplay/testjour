@@ -148,12 +148,11 @@ module Commands
     def step_counter
       return @step_counter if @step_counter
 
-      features = load_plain_text_features(configuration.feature_files)
       @step_counter = Testjour::StepCounter.new
       tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, [@step_counter])
       tree_walker.options = configuration.cucumber_configuration.options
-      tree_walker.visit_features(features)
-      return @step_counter
+      tree_walker.visit_features(configuration.plain_text_features)
+      @step_counter
     end
 
     def local_run_command

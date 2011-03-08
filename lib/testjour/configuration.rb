@@ -1,3 +1,4 @@
+require 'testjour/cucumber_extensions/plain_text_feature_collection'
 module Testjour
 
   class Configuration
@@ -95,28 +96,24 @@ module Testjour
       @parser ||= Cucumber::Parser::FeatureParser.new
     end
 
-    def load_plain_text_features(files)
-      features = Cucumber::Ast::Features.new
+    def plain_text_features
+      @plain_text_features ||= plain_text_features_collection.features
+    end
 
-      Array(files).each do |f|
-        feature_file = Cucumber::FeatureFile.new(f)
-        feature = feature_file.parse(step_mother, cucumber_configuration.options)
-        if feature
-          features.add_feature(feature)
-        end
-      end
-
-      return features
+    def plain_text_features_collection
+      return @plain_text_features_collection if @plain_text_features_collection
+      @plain_text_features_collection = Testjour::PlainTextFeatureCollection.new(self, cucumber_configuration.feature_files)
+      @plain_text_features_collection.load_plain_text_features!
+      @plain_text_features_collection
     end
 
     def feature_files
       return @feature_files if @feature_files
 
-      features = load_plain_text_features(cucumber_configuration.feature_files)
       finder = Testjour::FeatureFileFinder.new
       walker = Cucumber::Ast::TreeWalker.new(step_mother, [finder])
       walker.options = cucumber_configuration.options
-      walker.visit_features(features)
+      walker.visit_features(plain_text_features)
       @feature_files = finder.feature_files
 
       return @feature_files
@@ -259,7 +256,7 @@ module Testjour
         opts.on("--rsync-uri=RSYNC_URI", "Use another location to host the codebase for slave rsync (master will rsync to this URI first)") do |rsync_uri|
           @options[:rsync_uri] = rsync_uri
         end
-        
+
         opts.on("--rsync-exclude=EXCLUDE", "Additional ignore arguments during master to slave rsycing") do |rsync_exclude|
           @options[:rsync_excludes] ||= []
           @options[:rsync_excludes] << rsync_exclude
