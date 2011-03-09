@@ -96,15 +96,12 @@ module Testjour
       @parser ||= Cucumber::Parser::FeatureParser.new
     end
 
-    def plain_text_features
-      @plain_text_features ||= plain_text_features_collection.features
+    def load_plain_text_features(files)
+      Testjour::PlainTextFeatureCollection.load_plain_text_features(self, files)
     end
 
-    def plain_text_features_collection
-      return @plain_text_features_collection if @plain_text_features_collection
-      @plain_text_features_collection = Testjour::PlainTextFeatureCollection.new(self, cucumber_configuration.feature_files)
-      @plain_text_features_collection.load_plain_text_features!
-      @plain_text_features_collection
+    def all_plain_text_features
+      @all_plain_text_features ||= load_plain_text_features(cucumber_configuration.feature_files)
     end
 
     def feature_files
@@ -113,7 +110,7 @@ module Testjour
       finder = Testjour::FeatureFileFinder.new
       walker = Cucumber::Ast::TreeWalker.new(step_mother, [finder])
       walker.options = cucumber_configuration.options
-      walker.visit_features(plain_text_features)
+      walker.visit_features(all_plain_text_features)
       @feature_files = finder.feature_files
 
       return @feature_files

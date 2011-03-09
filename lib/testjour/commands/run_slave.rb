@@ -56,7 +56,7 @@ module Commands
       while feature_file
         if (feature_file = work_queue.pop)
           Testjour.logger.info "Loading: #{feature_file}"
-          features = configuration.plain_text_features_collection[feature_file]
+          features = configuration.load_plain_text_features(feature_file)
           parent_pid = $PID
           if @child = fork
             Testjour.logger.info "Forked #{@child} to run #{feature_file}"

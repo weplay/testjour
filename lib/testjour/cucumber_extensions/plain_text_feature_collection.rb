@@ -5,7 +5,12 @@ module Testjour
     def initialize(configuration, files)
       @configuration = configuration
       @files = files
-      @features_map = {}
+    end
+
+    def self.load_plain_text_features(configuration, files)
+      collection = new(configuration, files)
+      collection.load_plain_text_features!
+      collection.features
     end
 
     def load_plain_text_features!
@@ -16,17 +21,8 @@ module Testjour
         feature = feature_file.parse(step_mother, configuration.cucumber_configuration.options)
         if feature
           features.add_feature(feature)
-          self[f] = feature
         end
       end
-    end
-
-    def []=(file, feature)
-      @features_map[file] = feature
-    end
-
-    def [](file)
-      @features_map[file]
     end
 
   protected

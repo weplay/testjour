@@ -151,7 +151,7 @@ module Commands
       @step_counter = Testjour::StepCounter.new
       tree_walker = Cucumber::Ast::TreeWalker.new(step_mother, [@step_counter])
       tree_walker.options = configuration.cucumber_configuration.options
-      tree_walker.visit_features(configuration.plain_text_features)
+      tree_walker.visit_features(configuration.all_plain_text_features)
       @step_counter
     end
 
