@@ -60,7 +60,7 @@ module Commands
           parent_pid = $PID
           if @child = fork
             Testjour.logger.info "Forked #{@child} to run #{feature_file}"
-            Process.wait
+            Process.wait(@child)
             Testjour.logger.info "Finished running: #{feature_file}"
           else
             Testjour.override_logger_pid(parent_pid)
